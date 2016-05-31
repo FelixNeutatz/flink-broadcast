@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:annotation-config/>
+
+    <!-- Scan for annotated Peel components in the 'de.tuberlin.dima.flink' package -->
+    <context:component-scan base-package="de.tuberlin.dima.flink" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Component"/>
+    </context:component-scan>
+
+    <import resource="classpath:peel-core.xml"/>
+    <import resource="classpath:peel-extensions.xml"/>
+
+    <!--
+         SYSTEMS
+    -->
+    <bean id="flink-1.0.3" class="org.peelframework.flink.beans.system.Flink" parent="system">
+        <constructor-arg name="version" value="1.0.3"/>
+        <constructor-arg name="configKey" value="flink" />
+        <constructor-arg name="lifespan" value="EXPERIMENT"/>
+        <constructor-arg name="dependencies">
+            <set value-type="org.peelframework.core.beans.system.System">
+                <ref bean="hdfs-2.7.1"/>
+            </set>
+        </constructor-arg>
+    </bean>
+
+    <!--
+         DATASETS
+    -->
+    <bean id="output" class="org.peelframework.core.beans.data.ExperimentOutput">
+        <constructor-arg name="fs" ref="hdfs-2.7.1"/>
+        <constructor-arg name="path" value="${system.hadoop-2.path.output}/result"/>
+    </bean>
+
+    <!--
+         EXPERIMENTS
+    -->
+    <bean id="broadcast.dev" class="org.peelframework.core.beans.experiment.ExperimentSuite">
+        <constructor-arg name="experiments">
+            <bean class="org.peelframework.core.beans.experiment.ExperimentSequence">
+                <constructor-arg name="paramName" value="dop"/>
+                <constructor-arg name="paramVals" >
+                    <list value-type="java.lang.String">
+                        <value>10</value>
+                        <value>20</value>
+                        <value>30</value>
+                    </list>
+                </constructor-arg>
+                <constructor-arg name="prototype">
+                    <!-- wordcount experiment with fixed dataset (flink) -->
+                    <bean id="experiment.flink.wordcount" class="org.peelframework.flink.beans.experiment.FlinkExperiment">
+                        <constructor-arg name="name" value="broadcast.scale.up.__dop__"/>
+                        <constructor-arg name="systems">
+                            <set value-type="org.peelframework.core.beans.system.System">
+                                <ref bean="hdfs-2.7.1"/>
+                            </set>
+                        </constructor-arg>
+                        <constructor-arg name="runner" ref="flink-1.0.3"/>
+                        <constructor-arg name="runs" value="5"/>
+                        <constructor-arg name="config">
+                            <value><![CDATA[
+                                my.degree.of.parallelism = __dop__
+                            ]]></value>
+                        </constructor-arg>
+                        <constructor-arg name="command">
+                            <value><![CDATA[
+                            -v -c de.tuberlin.dima.flink.broadcast.BroadcastJob                     \
+                            ${app.path.apps}/broadcast-bench-flink-jobs-1.0-SNAPSHOT.jar            \
+                            ${my.degree.of.parallelism}                                             \
+                            10                                                                      \
+                            ${system.hadoop-2.path.output}/result
+                            ]]></value>
+                        </constructor-arg>
+                        <constructor-arg name="inputs">
+                            <set value-type="org.peelframework.core.beans.data.DataSet"/>
+                        </constructor-arg>
+                        <constructor-arg name="outputs">
+                            <set value-type="org.peelframework.core.beans.data.ExperimentOutput">
+                                <ref bean="output"/>
+                            </set>
+                        </constructor-arg>
+                    </bean>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+</beans>
