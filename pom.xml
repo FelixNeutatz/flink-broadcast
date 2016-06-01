@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.tuberlin.dima.flink</groupId>
-    <artifactId>broadcast-bench</artifactId>
+    <artifactId>flink-broadcast</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -27,7 +27,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <!-- Peel -->
-        <peel.version>1.0.0-rc3</peel.version>
+        <peel.version>1.0.0-rc4</peel.version>
     </properties>
 
     <dependencyManagement>
@@ -35,17 +35,17 @@
             <!-- bundle jars -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>broadcast-bench-bundle</artifactId>
+                <artifactId>flink-broadcast-bundle</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>broadcast-bench-peelextensions</artifactId>
+                <artifactId>flink-broadcast-peelextensions</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>broadcast-bench-flink-jobs</artifactId>
+                <artifactId>flink-broadcast-flink-jobs</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
 
@@ -162,8 +162,8 @@
     </build>
 
   <modules>
-    <module>broadcast-bench-bundle</module>
-    <module>broadcast-bench-peelextensions</module>
-    <module>broadcast-bench-flink-jobs</module>
+    <module>flink-broadcast-bundle</module>
+    <module>flink-broadcast-peelextensions</module>
+    <module>flink-broadcast-flink-jobs</module>
   </modules>
 </project>
