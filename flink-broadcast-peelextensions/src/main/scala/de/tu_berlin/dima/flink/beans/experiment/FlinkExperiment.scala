@@ -103,7 +103,8 @@ object FlinkExperiment {
       // get the jobstats from the jobmanager
       val host = exp.config.getString(s"system.${exp.runner.configKey}.config.yaml.jobmanager.rpc.address")
       val port = exp.config.getInt(s"system.${exp.runner.configKey}.config.yaml.jobmanager.web.port")
-      val ids = (shell !! s"${exp.config.getString(s"system.${exp.runner.configKey}.path.home")}/bin/flink list -r | tail -n +2 | head -n 1 | cut -d':' -f4 | tr -d ' '").split(Array('\n', ' '))
+      // retrieve job ids for all finished jobs from Flink rest API
+      val ids =  (shell !! s"curl http://$host:$port/jobs").parseJson.convertTo[Map[String, Array[String]]].apply("jobs-finished")
       for (id <- ids) {
         shell ! s"curl http://$host:$port/jobs/$id > $home/jobstats-$id.json"
       }
