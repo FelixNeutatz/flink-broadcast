@@ -100,6 +100,9 @@ object FlinkExperiment {
       // try to execute the experiment run plan
       val (runExit, t) = Experiment.time(this !(s"run ${command.trim}", s"$home/run.out", s"$home/run.err"))
 
+      state.runTime = t
+      state.runExitCode = Some(runExit)
+
       // get the jobstats from the jobmanager
       val host = exp.config.getString(s"system.${exp.runner.configKey}.config.yaml.jobmanager.rpc.address")
       val port = exp.config.getInt(s"system.${exp.runner.configKey}.config.yaml.jobmanager.web.port")
@@ -108,9 +111,6 @@ object FlinkExperiment {
       for (id <- ids) {
         shell ! s"curl http://$host:$port/jobs/$id > $home/jobstats-$id.json"
       }
-
-      state.runTime = t
-      state.runExitCode = Some(runExit)
     }
 
     override def cancelJob() = {
