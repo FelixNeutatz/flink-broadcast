@@ -5,7 +5,8 @@ import com.typesafe.config.ConfigFactory
 import de.tu_berlin.dima.flink.beans.experiment.FlinkExperiment
 import org.peelframework.core.beans.data.{DataSet, ExperimentOutput}
 import org.peelframework.core.beans.experiment.ExperimentSuite
-import org.peelframework.core.beans.system.{Lifespan, System}
+import org.peelframework.core.beans.system.Lifespan
+import org.peelframework.dstat.beans.system.Dstat
 import org.peelframework.flink.beans.system.Flink
 import org.peelframework.hadoop.beans.system.HDFS2
 import org.springframework.context.annotation._
@@ -70,7 +71,7 @@ class experiments extends ApplicationContextAware {
   // ---------------------------------------------------
 
   @Bean(name = Array("broadcast"))
-  def `ex-A1.X`: ExperimentSuite = new ExperimentSuite(
+  def broadcast: ExperimentSuite = new ExperimentSuite(
     for {
       numberOfTaskSlots <- Seq(1, 2, 4, 8, 16)
     } yield new FlinkExperiment(
@@ -93,10 +94,10 @@ class experiments extends ApplicationContextAware {
          """.stripMargin),
       runs         = runs,
       runner       = ctx.getBean("flink-1.0.3", classOf[Flink]),
-      systems      = Set.getBean("dstat-0.7.2", classOf[Dstat])),
+      systems      = Set(ctx.getBean("dstat-0.7.2", classOf[Dstat])),
       inputs       = Set.empty[DataSet],
       outputs      = Set(hdfsOutput("result"))
-    //@formatter:on
+      //@formatter:on
     )
   )
 }
